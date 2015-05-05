@@ -44,4 +44,4 @@ if config['debug']:
     app.run()
 else:
     app.debug = False
-    app.run(host='0.0.0.0')
+    app.run(host=config['host'])
