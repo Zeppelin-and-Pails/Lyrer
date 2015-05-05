@@ -66,7 +66,7 @@ class analyrer:
         words = lyrics.split()
         # check each one, luck songs aren't that long
         for word in words:
-            if word not in details:
+            if word not in details['words']:
                 total += 1
                 details['words'][word] = {}
                 details['words'][word]['count'] = 1
