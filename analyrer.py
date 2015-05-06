@@ -52,7 +52,7 @@ class analyrer:
         
         if self.config['debug']:
             print "getLyrics completed successfully"
-        return re.sub(r'[^a-zA-Z0-9\s]', r'', lyrics.lower())
+        return {'formated': re.sub(r'[^a-zA-Z0-9 ]', r'', lyrics.lower()), 'raw': lyrics}
 
     def getLyricStats(self, lyrics):
         if self.config['debug']:
@@ -63,7 +63,7 @@ class analyrer:
         details['words'] = {}
         
         # split up the lyrics into words
-        words = lyrics.split()
+        words = lyrics['formated'].split()
         # check each one, luck songs aren't that long
         for word in words:
             if word not in details['words']:
@@ -79,10 +79,24 @@ class analyrer:
         details['total_words'] = len(words)
         details['unique_words'] = total
         
+        details['readable'] = self.getReadable(lyrics['raw'])
+        
         return details
         
     def addDash(self, undashed):
         return undashed.replace(" ", "-")
-
-
-
+        
+    def getReadable(self, lyrics):
+        if self.config['debug']:
+            print "getReadable called"
+    
+        payload = {'text': lyrics}
+        headers = {'X-Mashape-Key': self.config['rbkey'], 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'}
+        r = requests.post(self.config['rburi'], params=payload, headers=headers)
+        
+        return r.text
+    
+    
+    
+    
+    
