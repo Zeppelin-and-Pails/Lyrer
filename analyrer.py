@@ -11,6 +11,7 @@ Gets the lyrics for a song, and does some fudging
 __version__ = "1.1.1"
 
 import re
+import json
 import requests
 from bs4 import BeautifulSoup
 
@@ -79,7 +80,7 @@ class analyrer:
         details['total_words'] = len(words)
         details['unique_words'] = total
         
-        details['readable'] = self.getReadable(lyrics['raw'])
+        details['readable'] = json.loads( self.getReadable(lyrics['raw']) )
         
         return details
         
