@@ -49,7 +49,16 @@ class analyrer:
             # make it into a delicious soup
             soup = BeautifulSoup(r.text)
             # strain the crap out of the soup
-            lyrics = soup.find( 'div', { 'id': 'lyrics-body-text'} ).get_text(" ").strip()
+            lyrics = soup.find( 'div', { 'id': 'lyrics-body-text'} )
+
+            lyrics = str( lyrics ).replace('<br>', '\n ')
+            lyrics = lyrics.replace('<br/>', '.\n ')
+            lyrics = lyrics.replace('<p class="verse">', ' ')
+            lyrics = lyrics.replace('</p>', '.\n ')
+            lyrics = lyrics.replace('</div>', ' ')
+            lyrics = lyrics.replace('<div id="lyrics-body-text">', ' ')
+
+            #lyrics = lyrics.replace('\n\n','.\n')
         
         if self.config['debug']:
             print "getLyrics completed successfully"
@@ -90,14 +99,8 @@ class analyrer:
     def getReadable(self, lyrics):
         if self.config['debug']:
             print "getReadable called"
-    
-        payload = {'text': lyrics}
-        headers = {'X-Mashape-Key': self.config['rbkey'], 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'}
-        r = requests.post(self.config['rburi'], params=payload, headers=headers)
-        
+   
+        data = {'text': lyrics }
+        r = requests.post(self.config['gomberturi'], data=data)
+
         return r.text
-    
-    
-    
-    
-    
