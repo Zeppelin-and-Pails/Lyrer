@@ -10,5 +10,5 @@ Lyrer is a simple API designed to locate lyrics.
 
 2. Send a request to lyrer using curl `curl http://127.0.0.1:5000/Queen/bohemian%20rhapsody`
 
-3. Recieve lyrics
+3. Receive lyrics
 
