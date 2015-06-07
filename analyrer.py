@@ -17,49 +17,48 @@ from bs4 import BeautifulSoup
 
 class analyrer:
     config = None
-    
+
     def __init__(self, conf):
         self.config = conf
         if self.config['debug']:
             print "Analyrer initialised successfully"
 
     def getLyrics(self, artist, song):
-        # some caveman debug
-        if self.config['debug']:
-            if self.config['chartlyrics']:
-                print "getLyrics called using ChartLyrics"
-            elif self.config['metrolyrics']:
-                print "getLyrics called using MetroLyrics"
-        
-        if self.config['chartlyrics']:
-            # build a payload for the get params
-            payload = {'artist': artist, 'song': song}
-            # request the xml
-            r = requests.get(self.config['cluri'], params=payload)
-            # make it into a soup
-            soup = BeautifulSoup(r.text, "xml")
-            # get the bit we actually want
-            lyrics = soup.GetLyricResult.Lyric.text
+        lyrics = ""
 
-        elif self.config['metrolyrics']:
-            # build the uri
-            uri = self.config['mluri'].format(self.addDash(song), self.addDash(artist))
-            # request the page
-            r = requests.get(uri)
-            # make it into a delicious soup
-            soup = BeautifulSoup(r.text)
-            # strain the crap out of the soup
-            lyrics = soup.find( 'div', { 'id': 'lyrics-body-text'} )
+        for source in self.config['lyric_sources']:
+            config = self.config['lyric_sources'][ source ]
 
-            lyrics = str( lyrics ).replace('<br>', '\n ')
-            lyrics = lyrics.replace('<br/>', '.\n ')
-            lyrics = lyrics.replace('<p class="verse">', ' ')
-            lyrics = lyrics.replace('</p>', '.\n ')
-            lyrics = lyrics.replace('</div>', ' ')
-            lyrics = lyrics.replace('<div id="lyrics-body-text">', ' ')
+            if config['type'] == 'scrape':
+                uri = config['uri'].format(self.addDash(song), self.addDash(artist))
+                # request the page
+                r = requests.get(uri)
+                # make it into a delicious soup
+                soup = BeautifulSoup(r.text)
+                # strain the crap out of the soup
+                lyrics = soup.find( 'div', { 'id': 'lyrics-body-text'} )
 
-            #lyrics = lyrics.replace('\n\n','.\n')
-        
+                lyrics = str( lyrics ).replace('<br>', '\n ')
+                lyrics = lyrics.replace('<br/>', '.\n ')
+                lyrics = lyrics.replace('<p class="verse">', ' ')
+                lyrics = lyrics.replace('</p>', '.\n ')
+                lyrics = lyrics.replace('</div>', ' ')
+                lyrics = lyrics.replace('<div id="lyrics-body-text">', ' ')
+
+            if config['type'] == 'api':
+                # build a payload for the get params
+                payload = {'artist': artist, 'song': song}
+                # request the xml
+                r = requests.get(config['uri'], params=payload)
+                # make it into a soup
+                soup = BeautifulSoup(r.text, "xml")
+                # get the bit we actually want
+                lyrics = soup.GetLyricResult.Lyric.text
+
+            if not len(lyrics):
+                print "Success from {}".format(source)
+                break
+
         if self.config['debug']:
             print "getLyrics completed successfully"
         return {'formated': re.sub(r'[^a-zA-Z0-9 ]', r'', lyrics.lower()), 'raw': lyrics}
@@ -71,7 +70,7 @@ class analyrer:
         total = 0
         details = {}
         details['words'] = {}
-        
+
         # split up the lyrics into words
         words = lyrics['formated'].split()
         # check each one, luck songs aren't that long
@@ -88,19 +87,19 @@ class analyrer:
 
         details['total_words'] = len(words)
         details['unique_words'] = total
-        
+
         details['readable'] = json.loads( self.getReadable(lyrics['raw']) )
-        
+
         return details
-        
+
     def addDash(self, undashed):
         return undashed.replace(" ", "-")
-        
+
     def getReadable(self, lyrics):
         if self.config['debug']:
             print "getReadable called"
-   
+
         data = {'text': lyrics }
-        r = requests.post(self.config['gomberturi'], data=data)
+        r = requests.post(self.config['gombert'], data=data)
 
         return r.text
