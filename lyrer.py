@@ -36,12 +36,8 @@ def index(artist, songname=None):
     else:
         lyrics = analyr.getLyrics(artist, songname)
         details = analyr.getLyricStats(lyrics)
-        
+
         return jsonify(details)
 
-if config['debug']:
-    app.debug = True
-    app.run()
-else:
-    app.debug = False
-    app.run(host=config['host'], port=config['port'])
+app.debug = True if config['debug'] else False
+app.run(host=config['host'], port=config['port'])
