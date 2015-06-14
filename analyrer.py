@@ -36,6 +36,8 @@ class analyrer:
                 # make it into a delicious soup
                 soup = BeautifulSoup(r.text)
                 # strain the crap out of the soup
+                # If div#lyrics-body-text do this
+                # else, throw an exception or something in the future
                 lyrics = soup.find( 'div', { 'id': 'lyrics-body-text'} )
 
                 lyrics = str( lyrics ).replace('<br>', '\n ')
