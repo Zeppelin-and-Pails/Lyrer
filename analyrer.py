@@ -36,16 +36,15 @@ class analyrer:
                 # make it into a delicious soup
                 soup = BeautifulSoup(r.text)
                 # strain the crap out of the soup
-                # If div#lyrics-body-text do this
-                # else, throw an exception or something in the future
-                lyrics = soup.find( 'div', { 'id': 'lyrics-body-text'} )
 
-                lyrics = str( lyrics ).replace('<br>', '\n ')
-                lyrics = lyrics.replace('<br/>', '.\n ')
-                lyrics = lyrics.replace('<p class="verse">', ' ')
-                lyrics = lyrics.replace('</p>', '.\n ')
-                lyrics = lyrics.replace('</div>', ' ')
-                lyrics = lyrics.replace('<div id="lyrics-body-text">', ' ')
+                lyrics = soup.find( 'div', { 'id': 'lyrics-body-text'} )
+                if lyrics:
+                    lyrics = str( lyrics ).replace('<br>', '\n ')
+                    lyrics = lyrics.replace('<br/>', '.\n ')
+                    lyrics = lyrics.replace('<p class="verse">', ' ')
+                    lyrics = lyrics.replace('</p>', '.\n ')
+                    lyrics = lyrics.replace('</div>', ' ')
+                    lyrics = lyrics.replace('<div id="lyrics-body-text">', ' ')
 
             if config['type'] == 'api':
                 # build a payload for the get params
@@ -57,12 +56,13 @@ class analyrer:
                 # get the bit we actually want
                 lyrics = soup.GetLyricResult.Lyric.text
 
-            if not len(lyrics):
+            if lyrics:
                 print "Success from {}".format(source)
                 break
 
         if self.config['debug']:
             print "getLyrics completed successfully"
+
         return {'formated': re.sub(r'[^a-zA-Z0-9 ]', r'', lyrics.lower()), 'raw': lyrics}
 
     def getLyricStats(self, lyrics):

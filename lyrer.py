@@ -35,9 +35,12 @@ def index(artist, songname=None):
         return 'sup'
     else:
         lyrics = analyr.getLyrics(artist, songname)
-        details = analyr.getLyricStats(lyrics)
 
-        return jsonify(details)
+        if lyrics:
+        	details = analyr.getLyricStats(lyrics)
+        	return jsonify(details)
+        else:
+        	return "Could not gather lyrics"
 
 app.debug = True if config['debug'] else False
 app.run(host=config['host'], port=config['port'])
