@@ -24,41 +24,46 @@ class analyrer:
             print "Analyrer initialised successfully"
 
     def getLyrics(self, artist, song):
-        lyrics = ""
+        lyrics = self.checkCache(self.addDash(artist), self.addDash(song))
 
-        for source in self.config['lyric_sources']:
-            config = self.config['lyric_sources'][ source ]
+        if not lyrics:
+            for source in self.config['lyric_sources']:
+                config = self.config['lyric_sources'][ source ]
 
-            if config['type'] == 'scrape':
-                uri = config['uri'].format(self.addDash(song), self.addDash(artist))
-                # request the page
-                r = requests.get(uri)
-                # make it into a delicious soup
-                soup = BeautifulSoup(r.text)
-                # strain the crap out of the soup
+                if config['type'] == 'scrape':
+                    uri = config['uri'].format(self.addDash(song), self.addDash(artist))
+                    # request the page
+                    r = requests.get(uri)
+                    # make it into a delicious soup
+                    soup = BeautifulSoup(r.text)
+                    # strain the crap out of the soup
 
-                lyrics = soup.find( 'div', { 'id': 'lyrics-body-text'} )
+                    lyrics = soup.find( 'div', { 'id': 'lyrics-body-text'} )
+                    if lyrics:
+                        lyrics = str( lyrics ).replace('<br>', '\n ')
+                        lyrics = lyrics.replace('<br/>', '.\n ')
+                        lyrics = lyrics.replace('<p class="verse">', ' ')
+                        lyrics = lyrics.replace('</p>', '.\n ')
+                        lyrics = lyrics.replace('</div>', ' ')
+                        lyrics = lyrics.replace('<div id="lyrics-body-text">', ' ')
+
+                if config['type'] == 'api':
+                    # build a payload for the get params
+                    payload = {'artist': artist, 'song': song}
+                    # request the xml
+                    r = requests.get(config['uri'], params=payload)
+                    # make it into a soup
+                    soup = BeautifulSoup(r.text, "xml")
+                    # get the bit we actually want
+                    lyrics = soup.GetLyricResult.Lyric.text
+
                 if lyrics:
-                    lyrics = str( lyrics ).replace('<br>', '\n ')
-                    lyrics = lyrics.replace('<br/>', '.\n ')
-                    lyrics = lyrics.replace('<p class="verse">', ' ')
-                    lyrics = lyrics.replace('</p>', '.\n ')
-                    lyrics = lyrics.replace('</div>', ' ')
-                    lyrics = lyrics.replace('<div id="lyrics-body-text">', ' ')
-
-            if config['type'] == 'api':
-                # build a payload for the get params
-                payload = {'artist': artist, 'song': song}
-                # request the xml
-                r = requests.get(config['uri'], params=payload)
-                # make it into a soup
-                soup = BeautifulSoup(r.text, "xml")
-                # get the bit we actually want
-                lyrics = soup.GetLyricResult.Lyric.text
-
-            if lyrics:
-                print "Success from {}".format(source)
-                break
+                    print "Success from {}".format(source)
+                    self.writeCache(self.addDash(artist), self.addDash(song), lyrics)
+                    break
+        else:
+            if self.config['debug']:
+                print "Using lyrics from cache"
 
         if self.config['debug']:
             print "getLyrics completed successfully"
@@ -96,6 +101,21 @@ class analyrer:
 
     def addDash(self, undashed):
         return undashed.replace(" ", "-")
+
+    def checkCache(self, artist, song):
+        data = ""
+        try:
+            with open ("{}/lyrics-{}-{}".format(self.config['cachePath'], artist, song), "r") as myfile:
+                data=myfile.read()
+        except IOError as err:
+            if err.errno == 2:
+                pass
+
+        return data
+
+    def writeCache(self, artist, song, lyrics):
+        with open ("{}/lyrics-{}-{}".format(self.config['cachePath'], artist, song), "w+") as myfile:
+            myfile.write(lyrics)
 
     def getReadable(self, lyrics):
         if self.config['debug']:

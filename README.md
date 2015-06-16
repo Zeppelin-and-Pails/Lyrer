@@ -8,7 +8,7 @@ Lyrer is a simple API designed to locate lyrics.
 
 1. Run lyrer using `python lyrer.py`
 
-2. Send a request to lyrer using curl `curl http://127.0.0.1:5000/Queen/bohemian%20rhapsody`
+2. Send a request to lyrer using curl `curl http://127.0.0.1:5001/Queen/bohemian%20rhapsody`
 
 3. Receive lyrics
 
