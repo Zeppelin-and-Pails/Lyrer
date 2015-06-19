@@ -37,8 +37,13 @@ def index(artist, songname=None):
         lyrics = analyr.getLyrics(artist, songname)
 
         if lyrics:
-        	details = analyr.getLyricStats(lyrics)
-        	return jsonify(details)
+
+        	if "instrumental" in lyrics['formated'] and len(lyrics['formated']) < 50:
+        		return "Instrumental song found"
+
+        	else:
+        		details = analyr.getLyricStats(lyrics)
+        		return jsonify(details)
         else:
         	return "Could not gather lyrics"
 
