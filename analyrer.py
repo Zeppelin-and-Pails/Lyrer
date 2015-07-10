@@ -6,20 +6,25 @@ Gets the lyrics for a song, and does some fudging
 @category   silly
 @version    $ID: 1.1.1, 2015-02-19 17:00:00 CST $;
 @author     KMR
-@licence    http://www.wtfpl.net
+@licence    GNU GPL v.3
 """
 __version__ = "1.1.1"
 
 import re
 import json
 import requests
-from bs4 import BeautifulSoup
+import importlib
+from lyrics import lyrics
 
 class analyrer:
     config = None
+    sources = None
 
     def __init__(self, conf):
         self.config = conf
+        lyr = lyrics.lyrics()
+        self.sources = lyr.getModules()
+
         if self.config['debug']:
             print "Analyrer initialised successfully"
 
@@ -27,38 +32,13 @@ class analyrer:
         lyrics = self.checkCache(self.addDash(artist), self.addDash(song))
 
         if not lyrics:
-            for source in self.config['lyric_sources']:
-                config = self.config['lyric_sources'][ source ]
+            for source in self.sources:
+                self.stats[stat] = importlib.import_module("stats.{}".format(stat))
 
-                if config['type'] == 'scrape':
-                    uri = config['uri'].format(self.addDash(song), self.addDash(artist))
-                    # request the page
-                    r = requests.get(uri)
-                    # make it into a delicious soup
-                    soup = BeautifulSoup(r.text)
-                    # strain the crap out of the soup
 
-                    lyrics = soup.find( 'div', { 'id': 'lyrics-body-text'} )
-                    if lyrics:
-                        lyrics = str( lyrics ).replace('<br>', '\n ')
-                        lyrics = lyrics.replace('<br/>', '.\n ')
-                        lyrics = lyrics.replace('<p class="verse">', ' ')
-                        lyrics = lyrics.replace('</p>', '.\n ')
-                        lyrics = lyrics.replace('</div>', ' ')
-                        lyrics = lyrics.replace('<div id="lyrics-body-text">', ' ')
 
-                if config['type'] == 'api':
-                    # build a payload for the get params
-                    payload = {'artist': artist, 'song': song}
-                    # request the xml
-                    r = requests.get(config['uri'], params=payload)
-                    # make it into a soup
-                    soup = BeautifulSoup(r.text, "xml")
-                    # get the bit we actually want
-                    lyrics = soup.GetLyricResult.Lyric.text
 
                 if lyrics:
-                    print "Success from {}".format(source)
                     self.writeCache(self.addDash(artist), self.addDash(song), lyrics)
                     break
         else:
