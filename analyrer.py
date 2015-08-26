@@ -19,27 +19,29 @@ from lyrics import lyrics
 class analyrer:
     config = None
     sources = None
+    lyr = None
 
     def __init__(self, conf):
         self.config = conf
-        lyr = lyrics.lyrics()
-        self.sources = lyr.getModules()
+        self.lyr = lyrics.lyrics()
+        self.sources = self.lyr.getModules()
 
         if self.config['debug']:
             print "Analyrer initialised successfully"
 
     def getLyrics(self, artist, song):
-        lyrics = self.checkCache(self.addDash(artist), self.addDash(song))
+        toReturn = None
+        songLyrics = self.checkCache(self.addDash(artist), self.addDash(song))
 
-        if not lyrics:
-            for source in self.sources:
-                self.stats[stat] = importlib.import_module("stats.{}".format(stat))
+        if not songLyrics:
+            for module in self.sources:
+                lyricModule = importlib.import_module("lyrics.{}".format(module))
+                class_ = getattr(lyricModule, module)
+                instance = class_(self.lyr.getConfig(module))
+                songLyrics = instance.getLyrics(artist, song)
 
-
-
-
-                if lyrics:
-                    self.writeCache(self.addDash(artist), self.addDash(song), lyrics)
+                if songLyrics:
+                    self.writeCache(self.addDash(artist), self.addDash(song), songLyrics)
                     break
         else:
             if self.config['debug']:
@@ -48,9 +50,12 @@ class analyrer:
         if self.config['debug']:
             print "getLyrics completed successfully"
 
-        return {'formated': re.sub(r'[^a-zA-Z0-9 ]', r'', lyrics.lower()), 'raw': lyrics}
+        if songLyrics:
+            toReturn = {'formated': re.sub(r'[^a-zA-Z0-9 ]', r'', songLyrics.lower()), 'raw': songLyrics}
 
-    def getLyricStats(self, lyrics):
+        return toReturn
+
+    def getLyricStats(self, songLyrics):
         if self.config['debug']:
             print "getLyricStats called"
         # setup some stuff
@@ -59,7 +64,7 @@ class analyrer:
         details['words'] = {}
 
         # split up the lyrics into words
-        words = lyrics['formated'].split()
+        words = songLyrics['formated'].split()
         # check each one, luck songs aren't that long
         for word in words:
             if word not in details['words']:
@@ -75,7 +80,7 @@ class analyrer:
         details['total_words'] = len(words)
         details['unique_words'] = total
 
-        details['readable'] = json.loads( self.getReadable(lyrics['raw']) )
+        details['readable'] = json.loads( self.getReadable(songLyrics['raw']) )
 
         return details
 
@@ -93,15 +98,15 @@ class analyrer:
 
         return data
 
-    def writeCache(self, artist, song, lyrics):
+    def writeCache(self, artist, song, songLyrics):
         with open ("{}/lyrics-{}-{}".format(self.config['cachePath'], artist, song), "w+") as myfile:
-            myfile.write(lyrics)
+            myfile.write(songLyrics.encode('UTF-8'))
 
-    def getReadable(self, lyrics):
+    def getReadable(self, songLyrics):
         if self.config['debug']:
             print "getReadable called"
 
-        data = {'text': lyrics }
+        data = {'text': songLyrics }
         r = requests.post(self.config['gombert'], data=data)
 
         return r.text

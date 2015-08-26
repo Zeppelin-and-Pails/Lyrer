@@ -18,15 +18,23 @@ class metrolyrics:
 
     def __init__(self, conf):
         self.config = conf
-        if self.config['debug']:
-            print "metrolyrics initialised successfully"
+        print "metrolyrics initialised successfully"
+
+    def addDash(self, undashed):
+        return undashed.replace(" ", "-")
 
     def getLyrics(self, artist, song):
-        # build the uri
-        uri = self.config['mluri'].format(self.addDash(song), self.addDash(artist))
-        # request the page
-        r = requests.get(uri)
-        # make it into a delicious soup
-        soup = BeautifulSoup(r.text)
-        # strain the crap out of the soup
-        lyrics = soup.find( 'div', { 'id': 'lyrics-body-text'} ).get_text(" ").strip()
+        lyrics = None
+        try:
+            # build the uri
+            uri = self.config['url'].format(self.addDash(song), self.addDash(artist))
+            # request the page
+            r = requests.get(uri)
+            # make it into a delicious soup
+            soup = BeautifulSoup(r.text)
+            # strain the crap out of the soup
+            lyrics = soup.find( 'div', { 'id': 'lyrics-body-text'} ).get_text(" ").strip()
+        except:
+            print "metrolyrics failed"
+
+        return lyrics

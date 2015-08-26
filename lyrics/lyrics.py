@@ -22,3 +22,6 @@ class lyrics:
 
     def getModules(self):
         return self.config["modules"]
+
+    def getConfig(self, module):
+        return self.config[ module ]

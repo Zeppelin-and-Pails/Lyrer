@@ -18,14 +18,13 @@ class chartlyrics:
 
     def __init__(self, conf):
         self.config = conf
-        if self.config['debug']:
-            print "chartlyrics initialised successfully"
+        print "chartlyrics initialised successfully"
 
     def getLyrics(self, artist, song):
         # build a payload for the get params
         payload = {'artist': artist, 'song': song}
         # request the xml
-        r = requests.get(self.config['cluri'], params=payload)
+        r = requests.get(self.config['url'], params=payload)
         # make it into a soup
         soup = BeautifulSoup(r.text, "xml")
         # get the bit we actually want
