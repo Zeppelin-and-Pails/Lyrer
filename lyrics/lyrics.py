@@ -18,7 +18,7 @@ class lyrics:
 
     def __init__(self):
         DIR = os.path.dirname(os.path.realpath(__file__))
-        config = yaml.safe_load(open("{}/lyrics.cfg".format(DIR)))
+        self.config = yaml.safe_load(open("{}/lyrics.cfg".format(DIR)))
 
     def getModules(self):
-        return config["modules"]
+        return self.config["modules"]
