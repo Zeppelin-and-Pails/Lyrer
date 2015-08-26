@@ -14,4 +14,4 @@ import yaml
 
 DIR = os.path.dirname(os.path.realpath(__file__))
 config = yaml.safe_load(open("{}/lyrics.cfg".format(DIR)))
-__all__ = config["def_packs"]
+__all__ = config["modules"]
