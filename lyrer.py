@@ -11,6 +11,7 @@ Get stats for song lyrics
 __version__ = "1.1.1"
 
 #Import some stuff
+import resource
 import analyrer
 import os
 import yaml
@@ -21,6 +22,8 @@ from flask import Flask, jsonify
 DIR = os.path.dirname(os.path.realpath(__file__))
 #Get the config
 config = yaml.safe_load(open("{}/lyrer.cfg".format(DIR)))
+
+resource.setrlimit(resource.RLIMIT_NOFILE, (65536, 65536))
 
 #Get an analyrer
 analyr = analyrer.analyrer(config)
