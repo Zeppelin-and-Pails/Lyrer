@@ -6,7 +6,7 @@ Get stats for song lyrics
 @category   silly
 @version    $ID: 1.1.1, 2015-05-04 17:00:00 CST $;
 @author     KMR
-@licence    http://www.wtfpl.net
+@licence    GNU GPL v.3
 """
 __version__ = "1.1.1"
 
@@ -41,14 +41,14 @@ def index(artist, songname=None):
 
         if lyrics:
 
-        	if "instrumental" in lyrics['formated'] and len(lyrics['formated']) < 50:
-        		return "Instrumental song found"
+            if "instrumental" in lyrics['formated'] and len(lyrics['formated']) < 50:
+                return "Instrumental song found"
 
-        	else:
-        		details = analyr.getLyricStats(lyrics)
-        		return jsonify(details)
+            else:
+                details = analyr.getLyricStats(lyrics)
+                return jsonify(details)
         else:
-        	return "Could not gather lyrics"
+            return "Could not gather lyrics"
 
 app.debug = True if config['debug'] else False
 app.run(host=config['host'], port=config['port'])
